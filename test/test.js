@@ -10,10 +10,49 @@ var dboptions = {
 };
 
 mongostream.open(dboptions, function(err){
+	printResult('open', err);
+	if(!err){
+		var appObject = {
+			id: new Date().toString(),
+			name: "jeffrey"		
+		};
+		
+		mongostream.insert('user', appObject, function(err){
+			printResult('insert', err);
+			mongostream.queryByID('user', appObject.id, function(err, obj){
+				printResult('query', err);
+				
+				console.log(JSON.stringify(obj));
+				
+				appObject.name = "jeffrey sun"
+				mongostream.updateByID('user', appObject, function(err, obj){
+				
+					printResult('update', err);
+					mongostream.queryByID('user', appObject.id, function(err, obj){
+						printResult('query 2', err);
+						
+						console.log(JSON.stringify(obj));
+						
+						mongostream.removeByID('user', appObject.id, function(err, obj){
+							printResult('remove', err);
+							
+							mongostream.close();
+						})
+					});
+				});				
+			});
+			
+		
+		});
+	}
+});
+
+
+var printResult = function (msg, err){
 	if(err){
-		console.log("OPEN FAIL - " + err.message);
+		console.log(msg + " FAIL - " + err.message);
 	}
 	else{
-		console.log("OPEN SUCCESS");
+		console.log(msg + " SUCCESS");
 	}
-})
+};
