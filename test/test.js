@@ -6,10 +6,15 @@ var appObject = {
 	id: new Date().toString(),
 	name: "jeffrey"		
 };
+
+var fileObject = {
+	id : new Date().toString(),
+	data_buffer : new Buffer('Hello world') 
+};
 		
 describe('Mongo', function(){
 	before(function(done){
-		mongostream.addSupportedCollections(["user"]);
+		mongostream.addSupportedCollections(["user", "storage"]);
 
 		var dboptions = {
 			host: "127.0.0.1",
@@ -84,4 +89,46 @@ describe('Mongo', function(){
 			});	  
 		}); 
 	}); 
+	
+	
+	describe('Grid FS', function(){
+		it('.insertFile should return the new inserted file object', function(done){
+			mongostream.insertFile('storage', fileObject, function(err, obj){
+				should.not.exist(err);
+				should.exist(obj);
+				obj.should.have.property('id');
+				obj.should.have.property('data_buffer');	
+				
+				done();
+			});	  
+		});
+		
+		it('.queryFileByID should return the file data buffer', function(done){
+			mongostream.queryFileByID('storage', fileObject.id, function(err, data_buffer){
+				should.not.exist(err);
+				should.exist(data_buffer);				
+				should.equal(data_buffer.toString('base64'), fileObject.data_buffer.toString('base64'));
+				
+				done();
+			});	  
+		});
+		
+		it('.removeFileByID should be success', function(done){
+			mongostream.removeFileByID('storage', fileObject.id, function(err, result){
+				should.not.exist(err);
+				should.exist(result);				
+				result.should.equal(true);
+				
+				done();
+			});	  
+		});
+		
+		it('.queryFileByID should be fail when query a deleted file', function(done){
+			mongostream.queryFileByID('storage', fileObject.id, function(err, data_buffer){
+				should.exist(err);
+				
+				done();
+			});	  
+		});
+	});
 });
