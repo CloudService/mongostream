@@ -7,9 +7,10 @@ var appObject = {
 	name: "jeffrey"		
 };
 
+var string_data = 'Hello world';
 var fileObject = {
 	id : new Date().toString(),
-	data_buffer : new Buffer('Hello world') 
+	data_buffer : new Buffer(string_data) 
 };
 		
 describe('Mongo', function(){
@@ -108,6 +109,16 @@ describe('Mongo', function(){
 				should.not.exist(err);
 				should.exist(data_buffer);				
 				should.equal(data_buffer.toString('base64'), fileObject.data_buffer.toString('base64'));
+				
+				done();
+			});	  
+		});
+		
+		it('.queryFileByID data_buffer should be converted to string', function(done){
+			mongostream.queryFileByID('storage', fileObject.id, function(err, data_buffer){
+				should.not.exist(err);
+				should.exist(data_buffer);				
+				should.equal(data_buffer.toString(), string_data);
 				
 				done();
 			});	  
