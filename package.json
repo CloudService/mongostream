@@ -1,6 +1,6 @@
 {
     "name": "mongostream",
-    "version": "0.2.0",
+    "version": "0.2.1",
     "author": "Jeffrey Sun",
     "description": "MongoDB stream.",
     "main": "index.js",
