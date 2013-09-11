@@ -93,9 +93,9 @@ describe('Mongo', function(){
 		}); 
 		
 		it('.removeByID should be success', function(done){
-			mongostream.removeByID('user', appObject.id, function(err){
+			mongostream.removeByID('user', appObject.id, function(err, num){
 				should.not.exist(err);
-				
+                num.should.equal(1);
 				done();
 			});	  
 		}); 
