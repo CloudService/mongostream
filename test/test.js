@@ -21,7 +21,7 @@ var fileObject = {
 		
 describe('Mongo', function(){
 	before(function(done){
-		mongostream.addSupportedCollections(["user", "storage"]);
+		mongostream.addSupportedCollections(["user", "storage", "limitation"]);
 
 		var dboptions = {
 			host: "127.0.0.1", // "127.0.0.1", "10.31.149.122"
@@ -108,6 +108,97 @@ describe('Mongo', function(){
 				done();
 			});	  
 		}); 
+	}); 
+	
+	describe('limitation options', function(){
+		it('.insert test objects', function(done){
+			// Note: don't change the value of the id and created_at.
+			
+			// order 2
+			var testObject = {
+				id: 1,
+				created_at: new Date("2012-06-15T15:10:400Z")
+			}
+			mongostream.insert('limitation', testObject, function(err, obj){
+				// order 1
+				var testObject = {
+					id: 2,
+					created_at: new Date("2012-06-15T15:00:10Z")
+				}
+				               
+				mongostream.insert('limitation', testObject, function(err, obj){
+					// order 4
+					var testObject = {
+						id: 3,
+						created_at: new Date("2012-06-15T16:50:00Z")
+					}
+					mongostream.insert('limitation', testObject, function(err, obj){
+						// order 3
+						var testObject = {
+							id: 4,
+							created_at: new Date("2012-06-15T15:40:00Z")
+						}
+					   
+						mongostream.insert('limitation', testObject, function(err, obj){
+								
+							done();
+						});	 
+					});	 	   
+				});	  
+			});	  
+		});  
+		
+		it('.queryByLimitationOptions should return the sorted objects', function(done){
+			var q = {
+			
+			};
+			var l = {
+			   "limit": 3,
+			   "benchmark":"created_at"
+			};
+			mongostream.queryByLimitationOptions('limitation', q, l, function(err, objArr){
+				should.not.exist(err);
+				should.exist(objArr);
+                objArr.should.have.property('length', 3); 
+                
+                objArr[0].id.should.equal(1); 
+                objArr[1].id.should.equal(4);
+                objArr[2].id.should.equal(3);  
+				
+				done();
+			});	  
+		}); 
+		
+		it('.queryByLimitationOptions should return the sorted objects', function(done){
+			var q = {
+			
+			};
+			var l = {
+				"start": "2012-06-15T15:10:400Z",
+				"end": "2012-06-15T15:40:00Z",
+				"benchmark": "created_at"
+			 };
+			mongostream.queryByLimitationOptions('limitation', q, l, function(err, objArr){
+				should.not.exist(err);
+				should.exist(objArr);
+                objArr.should.have.property('length', 1); 
+                
+                objArr[0].id.should.equal(4); 
+				
+				done();
+			});	  
+		}); 
+		
+		it('removeByOptions remove all objects', function(done){
+			
+			mongostream.removeByOptions('limitation', {}, function(err, num){
+				should.not.exist(err);
+				num.should.equal(4); 
+				
+				done();
+			});	  
+		}); 
+		
 	}); 
 	
 	
