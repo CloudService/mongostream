@@ -116,27 +116,27 @@ describe('Mongo', function(){
 			
 			// order 2
 			var testObject = {
-				id: 1,
-				created_at: new Date("2012-06-15T15:10:400Z")
+				id: 2,
+				created_at: new Date("2012-06-15T15:20:00Z")
 			}
 			mongostream.insert('limitation', testObject, function(err, obj){
 				// order 1
 				var testObject = {
-					id: 2,
-					created_at: new Date("2012-06-15T15:00:10Z")
+					id: 1,
+					created_at: new Date("2012-06-15T15:10:00Z")
 				}
 				               
 				mongostream.insert('limitation', testObject, function(err, obj){
 					// order 4
 					var testObject = {
-						id: 3,
-						created_at: new Date("2012-06-15T16:50:00Z")
+						id: 4,
+						created_at: new Date("2012-06-15T15:40:00Z")
 					}
 					mongostream.insert('limitation', testObject, function(err, obj){
 						// order 3
 						var testObject = {
-							id: 4,
-							created_at: new Date("2012-06-15T15:40:00Z")
+							id: 3,
+							created_at: new Date("2012-06-15T15:30:00Z")
 						}
 					   
 						mongostream.insert('limitation', testObject, function(err, obj){
@@ -148,7 +148,7 @@ describe('Mongo', function(){
 			});	  
 		});  
 		
-		it('.queryByLimitationOptions should return the sorted objects', function(done){
+		it('.queryByLimitationOptions limit return the LATEST 3 objects sorted in ascending (oldest to newest) order when start is not specified', function(done){
 			var q = {
 			
 			};
@@ -161,21 +161,132 @@ describe('Mongo', function(){
 				should.exist(objArr);
                 objArr.should.have.property('length', 3); 
                 
-                objArr[0].id.should.equal(1); 
-                objArr[1].id.should.equal(4);
-                objArr[2].id.should.equal(3);  
+                objArr[0].id.should.equal(2); 
+                objArr[1].id.should.equal(3);
+                objArr[2].id.should.equal(4);  
 				
 				done();
 			});	  
 		}); 
-		
-		it('.queryByLimitationOptions should return the sorted objects', function(done){
+        
+        it('.queryByLimitationOptions should return the LATEST 2 objects inside the time range', function(done){
 			var q = {
 			
 			};
 			var l = {
-				"start": "2012-06-15T15:10:400Z",
+				"duration": 60 * 40, // 4o minutes
+				"end": "2012-06-15T15:20:00Z",
+                "limit": 3,
+				"benchmark": "created_at"
+			 };
+			mongostream.queryByLimitationOptions('limitation', q, l, function(err, objArr){
+				should.not.exist(err);
+				should.exist(objArr);
+                objArr.should.have.property('length', 2); 
+                
+                objArr[0].id.should.equal(1); 
+				objArr[1].id.should.equal(2);
+                
+				done();
+			});	  
+		}); 
+        
+        it('.queryByLimitationOptions should return the EARLIEST 2 objects inside the time range sorted in ascending (oldest to newest) order when start is specified', function(done){
+			var q = {
+			
+			};
+			var l = {
+				"duration": 60 * 40, // 4o minutes
+				"start": "2012-06-15T15:00:00Z",
+                "limit": 2,
+				"benchmark": "created_at"
+			 };
+			mongostream.queryByLimitationOptions('limitation', q, l, function(err, objArr){
+				should.not.exist(err);
+				should.exist(objArr);
+                objArr.should.have.property('length', 2); 
+                
+                objArr[0].id.should.equal(1); 
+				objArr[1].id.should.equal(2);
+                
+				done();
+			});	  
+		}); 
+		
+		it('.queryByLimitationOptions should return the EARLIEST 2 objects inside the time range', function(done){
+			var q = {
+			
+			};
+			var l = {
+				"start": "2012-06-15T15:00:00Z",
 				"end": "2012-06-15T15:40:00Z",
+                "limit": 2,
+				"benchmark": "created_at"
+			 };
+			mongostream.queryByLimitationOptions('limitation', q, l, function(err, objArr){
+				should.not.exist(err);
+				should.exist(objArr);
+                objArr.should.have.property('length', 2); 
+                
+                objArr[0].id.should.equal(1); 
+                objArr[1].id.should.equal(2); 
+				
+				done();
+			});	  
+		}); 
+        
+        it('.queryByLimitationOptions should return all the objects inside the time range when the cout is equal or less than the 5', function(done){
+			var q = {
+			
+			};
+			var l = {
+				"start": "2012-06-15T15:10:00Z",
+				"end": "2012-06-15T15:30:00Z",
+                "limit": 5,
+				"benchmark": "created_at"
+			 };
+			mongostream.queryByLimitationOptions('limitation', q, l, function(err, objArr){
+				should.not.exist(err);
+				should.exist(objArr);
+                objArr.should.have.property('length', 2); 
+                
+                objArr[0].id.should.equal(2); 
+                objArr[1].id.should.equal(3); 
+				
+				done();
+			});	  
+		}); 
+        
+        it('.queryByLimitationOptions should return the first 2 objects inside the time range', function(done){
+			var q = {
+			
+			};
+			var l = {
+				"start": "2012-06-15T15:00:00Z",
+				"end": "2012-06-15T15:20:00Z",
+                "limit": 3,
+				"benchmark": "created_at"
+			 };
+			mongostream.queryByLimitationOptions('limitation', q, l, function(err, objArr){
+				should.not.exist(err);
+				should.exist(objArr);
+                objArr.should.have.property('length', 2); 
+                
+                objArr[0].id.should.equal(1); 
+				objArr[1].id.should.equal(2);
+                
+				done();
+			});	  
+		}); 
+        
+        it('.queryByLimitationOptions The start and end can be Date.', function(done){
+			var q = {
+			
+			};
+			var l = {
+				"start": new Date("2012-06-15T15:10:00Z"),
+				"end": new Date("2012-06-15T15:20:00Z"),
+                "limit": 2,
 				"benchmark": "created_at"
 			 };
 			mongostream.queryByLimitationOptions('limitation', q, l, function(err, objArr){
@@ -183,11 +294,12 @@ describe('Mongo', function(){
 				should.exist(objArr);
                 objArr.should.have.property('length', 1); 
                 
-                objArr[0].id.should.equal(4); 
+                objArr[0].id.should.equal(2); 
 				
 				done();
 			});	  
 		}); 
+        
 		
 		it('removeByOptions remove all objects', function(done){
 			
