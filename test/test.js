@@ -300,6 +300,49 @@ describe('Mongo', function(){
 			});	  
 		}); 
         
+        it('.queryByLimitationOptions should return support the query options', function(done){
+			var q = {
+                "id" : 2
+			};
+			var l = {
+				"start": "2012-06-15T15:00:00Z",
+				"end": "2012-06-15T15:50:00Z",
+                "limit": 5,
+				"benchmark": "created_at"
+			 };
+			mongostream.queryByLimitationOptions('limitation', q, l, function(err, objArr){
+				should.not.exist(err);
+				should.exist(objArr);
+                objArr.should.have.property('length', 1); 
+                
+                objArr[0].id.should.equal(2); 
+				
+				done();
+			});	  
+		}); 
+        
+        it('.queryByLimitationOptions should return support the query options', function(done){
+			var q = {
+                "id" : {'$gt': 2}
+			};
+			var l = {
+				"start": "2012-06-15T15:00:00Z",
+				"end": "2012-06-15T15:50:00Z",
+                "limit": 5,
+				"benchmark": "created_at"
+			 };
+			mongostream.queryByLimitationOptions('limitation', q, l, function(err, objArr){
+				should.not.exist(err);
+				should.exist(objArr);
+                objArr.should.have.property('length', 2); 
+                
+                objArr[0].id.should.equal(3); 
+				objArr[1].id.should.equal(4);
+                
+				done();
+			});	  
+		}); 
+        
 		
 		it('removeByOptions remove all objects', function(done){
 			
